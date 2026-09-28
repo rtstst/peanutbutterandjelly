@@ -274,7 +274,7 @@ section{ position: relative; }
 .hero-visual-inner{ position:relative; width:100%; }
 .hero-visual-base{
   display:block; width:100%; height:auto;
-  aspect-ratio: 5802 / 2492;
+  aspect-ratio: 1800 / 774;
 }
 .hero-visual-overlay{
   position:absolute; overflow:hidden;
@@ -703,19 +703,14 @@ footer{ padding: 60px var(--gutter) 50px; display:flex; justify-content:space-be
   </div>
   <div class="hero-visual">
     <div class="hero-visual-inner">
-      <img class="hero-visual-base" src="full.png" alt="Dashboard overview panel">
-      <div class="hero-visual-overlay hv-clicks">
-        <img src="01-chart-A.gif" alt="Total clicks trending up 15%">
-      </div>
-      <div class="hero-visual-overlay hv-jobs">
-        <img src="03-chart.gif" alt="Jobs by category, animated breakdown">
-      </div>
-      <div class="hero-visual-overlay hv-expenses">
-        <img src="05-chart.gif" alt="Expenses forecast, animated monthly bar chart">
-      </div>
-      <div class="hero-visual-overlay hv-budget">
-        <img src="04-chart.gif" alt="Budget used, animated KPI card">
-      </div>
+      <!-- Single pre-composited video (background + all 4 animated overlays
+           baked together, see hero-composite.mp4) instead of a static image
+           with 4 absolutely-positioned gif overlays — the layered version
+           was fragile across hosts (GitHub included): percentage-based
+           overlay math depended on the base image and each gif loading
+           and decoding in lockstep, which isn't guaranteed everywhere.
+           A single video file sidesteps all of that; it just plays. -->
+      <video class="hero-visual-base" src="hero-composite.mp4" poster="full.png" autoplay muted loop playsinline></video>
     </div>
   </div>
 </section>
