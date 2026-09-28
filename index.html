@@ -160,7 +160,7 @@ h1,h2,h3{ margin:0; font-weight:700; letter-spacing:-0.02em; }
   mix-blend-mode: normal;
 }
 .nav.is-scrolled{
-  background: rgba(229,233,242,0.88);
+  background: rgba(255,255,255,0.88);
   backdrop-filter: blur(16px) saturate(140%);
   border-bottom: 1px solid var(--line);
 }
@@ -255,6 +255,43 @@ section{ position: relative; }
   color: #000000;
 }
 .hero-headline, .hero-sub, .hero-headline strong{ color: #000000; }
+/* Hero visual — full.png is shown intact, at its own native aspect ratio,
+   scaled only by width (never cropped, never re-laid-out). The four gif
+   overlays are absolutely positioned in percentages of that same image,
+   measured directly off full.png's pixel grid (5802×2492), so they track
+   the exact card each one replaces — "Total clicks", "Jobs by category",
+   "Expenses forecast", and "Budget used" — at any viewport width. */
+.hero-visual{
+  z-index:2;
+  width:100%; max-width:1600px; margin: 56px auto 0;
+  padding: 0 var(--gutter);
+  box-sizing:border-box;
+}
+/* The positioning context for the overlays is this inner element alone —
+   no padding of its own — so left/top/width/height percentages line up
+   exactly with the rendered image's own box, regardless of the outer
+   .hero-visual gutter above. */
+.hero-visual-inner{ position:relative; width:100%; }
+.hero-visual-base{
+  display:block; width:100%; height:auto;
+  aspect-ratio: 5802 / 2492;
+}
+.hero-visual-overlay{
+  position:absolute; overflow:hidden;
+  border-radius: 1.6%;
+}
+.hero-visual-overlay img{
+  position:absolute; inset:0; width:100%; height:100%;
+  object-fit: cover; object-position:center; display:block;
+}
+/* Percentages measured against full.png's own pixel bounds. Left/top/width/
+   height are all relative to the same box (.hero-visual, which is exactly
+   as wide/tall as the rendered image), so the overlay scales in lockstep
+   with the base image at every breakpoint. */
+.hv-clicks{ left:4.809%; top:11.196%; width:12.651%; height:25.361%; }
+.hv-jobs{ left:26.801%; top:39.286%; width:21.372%; height:32.424%; }
+.hv-expenses{ left:49.345%; top:63.363%; width:14.736%; height:25.361%; }
+.hv-budget{ left:83.919%; top:47.311%; width:8.980%; height:13.403%; }
 .cta-btn{
   display:inline-flex; align-items:center; justify-content:center;
   margin-top: 28px; padding: 17px 34px;
@@ -431,7 +468,10 @@ section{ position: relative; }
 .pv-line-path.is-focus{ stroke-width:2.4; }
 .pv-line-path.is-hover{ stroke-width:2.1; }
 .pv-line-path.is-dim{ opacity:0.25; }
-.pv-line-path.is-hover-dim{ opacity:0.45; }
+.pv-line-path.is-hover-dim{ opacity:0.12; }
+/* Dimming (from either a click-focus or a hover) always keeps each line's
+   own real color (see the JS above) and only fades its opacity — same
+   treatment as the donut chart's hover state, never a gray recolor. */
 .pv-line-tag{
   font-family:'Relative Pro',sans-serif; font-size:12px; font-weight:500; fill:var(--pv-ink-soft); cursor:pointer;
   transition: fill .3s var(--pv-ease-fast), opacity .3s var(--pv-ease-fast), font-weight .3s;
@@ -607,61 +647,10 @@ table.jobads-table{ width:100%; border-collapse:collapse; min-width:900px; }
 .outro-sub{ margin-top:20px; color:var(--ink-soft); font-weight:400; font-size:clamp(15px, 1.3vw, 19px); letter-spacing:0.01em; max-width:480px; z-index:2; }
 footer{ padding: 60px var(--gutter) 50px; display:flex; justify-content:space-between; align-items:center; font-size:12px; color:var(--ink-faint); flex-wrap:wrap; gap:12px; }
 
-/* ============================================================
-   CHART COLLECTION — the six real charts, unmodified, displayed
-   a second time as a bold 2×3 collection. Each square frame uses
-   a soft tint from the donut palette; the actual chart component
-   sits centered inside, exactly as built by its own section's
-   existing CSS/JS (same colors, spacing, labels, hover states,
-   entrance animation) — cropped by the square frame where it
-   doesn't fit rather than resized or redrawn.
-============================================================ */
-.chart-collection{ padding: 160px 0 180px; }
-.cc-wrap{ max-width: var(--container); margin:0 auto; padding:0 var(--gutter); }
-.cc-head{ max-width:640px; margin-bottom:64px; }
-.cc-grid{
-  display:grid; grid-template-columns: 1fr 1fr;
-  gap: clamp(20px, 2.6vw, 36px);
-}
-.cc-card{
-  position:relative; overflow:hidden; border-radius:32px;
-  aspect-ratio: 1 / 1;
-  display:flex; align-items:center; justify-content:center;
-  padding: clamp(22px, 3vw, 40px);
-}
-.cc-blue{ background:#EEF1FB; }
-.cc-cyan{ background:#E9FBFC; }
-.cc-coral{ background:#FFF0EC; }
-.cc-neutral{ background:#F6F5F0; }
-.cc-white{ background:#FFFFFF; }
-.cc-none{ background:transparent; }
-.cc-fill{ padding:0; }
-.cc-stage{ width:100%; max-height:100%; }
-/* The Area chart's card relies on --pv-* tokens normally supplied by its
-   .pv-area ancestor; redeclare just those tokens here (no layout side
-   effects) so the duplicated card renders with identical colors/spacing. */
-.cc-pv-scope{
-  --pv-bg-card:#FFFFFF; --pv-ink:#000000; --pv-ink-soft:#000000; --pv-ink-faint:#000000;
-  --pv-line:#E5E9F2; --pv-accent:#425EC9; --pv-accent-soft:#ECEFFA;
-  --pv-card-radius:20px; --pv-card-shadow:0 1px 2px rgba(16,23,63,0.04), 0 10px 28px rgba(16,23,63,0.05);
-  --pv-ease:cubic-bezier(.16,.84,.32,1); --pv-ease-fast:cubic-bezier(.4,0,.2,1);
-  --pv-sp-4:24px; --pv-sp-5:32px; --pv-sp-6:48px; --pv-sp-7:64px;
-}
-.cc-card-label{
-  position:absolute; top:20px; left:24px; z-index:6;
-  font-family:'Relative Pro',sans-serif; font-weight:800;
-  font-size: 13px; letter-spacing:0.04em; text-transform:uppercase; color:var(--ink);
-  background:rgba(255,255,255,.78); padding:6px 12px; border-radius:20px;
-}
-
-@media (max-width: 900px){
-  .cc-grid{ grid-template-columns: 1fr; }
-}
 @media (max-width: 640px){
   .chapter{ padding: 64px 0; }
   .pv-area, .pv-line{ padding: 64px 0; }
   .wrap{ padding: 0 22px; }
-  .chart-collection{ padding: 100px 0 120px; }
 }
 </style>
 </head>
@@ -711,6 +700,23 @@ footer{ padding: 60px var(--gutter) 50px; display:flex; justify-content:space-be
     <div class="eyebrow">Design language of data visualisation</div>
     <h1 class="hero-headline">Visualizing<br>what matters</h1>
     <p class="hero-sub">Establishing the visual grammar, principles, and foundations that shape how data is seen, understood, and experienced.</p>
+  </div>
+  <div class="hero-visual">
+    <div class="hero-visual-inner">
+      <img class="hero-visual-base" src="full.png" alt="Dashboard overview panel">
+      <div class="hero-visual-overlay hv-clicks">
+        <img src="01-chart-A.gif" alt="Total clicks trending up 15%">
+      </div>
+      <div class="hero-visual-overlay hv-jobs">
+        <img src="03-chart.gif" alt="Jobs by category, animated breakdown">
+      </div>
+      <div class="hero-visual-overlay hv-expenses">
+        <img src="05-chart.gif" alt="Expenses forecast, animated monthly bar chart">
+      </div>
+      <div class="hero-visual-overlay hv-budget">
+        <img src="04-chart.gif" alt="Budget used, animated KPI card">
+      </div>
+    </div>
   </div>
 </section>
 
@@ -918,152 +924,13 @@ footer{ padding: 60px var(--gutter) 50px; display:flex; justify-content:space-be
   </div>
 </section>
 
-<!-- ============ CHART COLLECTION — 2×3 showcase ============ -->
-<section class="chart-collection" id="chartCollection">
-  <div class="cc-wrap">
-    <div class="cc-head">
-      <div class="eyebrow">08 / Collection</div>
-      <h2 class="headline reveal">One system, six views</h2>
-      <p class="body-text reveal" style="margin-top:22px;">Every chart in this language, together — bold, cropped, and quietly alive.</p>
-    </div>
-
-    <div class="cc-grid">
-
-      <!-- Bar graph — exact vertical bar-card, duplicated -->
-      <div class="cc-card cc-white reveal-scale">
-        <div class="cc-card-label">Bar chart</div>
-        <div class="cc-stage">
-          <div class="card bar-card">
-            <div class="bar-view is-active" style="height:auto;">
-              <div class="bar-card-title">Expenses forecast</div>
-              <svg class="bar-chart" id="barChartCc" viewBox="0 0 760 360" preserveAspectRatio="none"></svg>
-              <div class="viz-tooltip" id="barTooltipCc"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Area graph — exact pv-viz-card, duplicated -->
-      <div class="cc-card cc-cyan reveal-scale">
-        <div class="cc-card-label">Area chart</div>
-        <div class="cc-stage cc-pv-scope">
-          <div class="pv-viz-card" style="margin:0;">
-            <div class="pv-hero-kpi">
-              <div class="pv-viz-card-label">Response rate</div>
-              <div class="pv-hero-kpi-num tabular" id="areaKpiNumCc">+0%</div>
-            </div>
-            <div class="pv-chart-wrap" id="areaChartWrapCc">
-              <svg viewBox="0 0 1160 340" id="areaChartCc">
-                <path class="pv-area-fill" id="areaFillCc"></path>
-                <line class="pv-hover-line" id="areaHoverLineCc" x1="0" y1="0" x2="0" y2="340"></line>
-                <circle class="pv-hover-dot" id="areaHoverDotCc" r="7" cx="0" cy="0"></circle>
-                <rect class="pv-hit" id="areaHitCc" x="0" y="0" width="1160" height="340"></rect>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Circle / donut graph — exact donut-card, duplicated -->
-      <div class="cc-card cc-blue reveal-scale">
-        <div class="cc-card-label">Donut chart</div>
-        <div class="cc-stage" style="display:flex; flex-direction:column; align-items:center;">
-          <div class="donut-card">
-            <svg class="donut-svg" id="donutChartCc" viewBox="0 0 300 300"></svg>
-            <div class="donut-center">
-              <div class="num tabular" id="donutCenterNumCc">0</div>
-              <div class="lbl">OPEN ROLES</div>
-            </div>
-            <div class="viz-tooltip" id="donutTooltipCc"></div>
-          </div>
-          <div class="donut-legend" id="donutLegendCc"></div>
-        </div>
-      </div>
-
-      <!-- KPI card — exact kpi-card ("Budget used"), duplicated -->
-      <div class="cc-card cc-neutral reveal-scale">
-        <div class="cc-card-label">KPI card</div>
-        <div class="cc-stage" style="max-width:320px;">
-          <div class="kpi-card">
-            <div class="kpi-card-top">
-              <div class="kpi-card-label">Budget used</div>
-              <div class="kpi-pill up">↗ 10%</div>
-            </div>
-            <div class="kpi-card-num tabular" id="kpiNum1Cc">€0</div>
-            <div class="kpi-card-caption">of €25,000 total</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Data table — exact jobads-card, duplicated -->
-      <div class="cc-card cc-none cc-fill reveal-scale">
-        <div class="cc-card-label">Data table</div>
-        <div class="cc-stage" style="height:100%;">
-          <div class="card jobads-card" style="height:100%; border-radius:32px; padding-top:64px;">
-            <div class="jobads-head">
-              <h3 class="jobads-title">Job ads</h3>
-              <p class="jobads-sub">An overview of your job ads</p>
-            </div>
-            <div class="jobads-toolbar">
-              <div class="jobads-tabs">
-                <div class="jobads-tab is-active">All <span class="count">24</span></div>
-                <div class="jobads-tab">Top performing <span class="count">5</span></div>
-                <div class="jobads-tab">Under performing <span class="count">2</span></div>
-              </div>
-              <div class="jobads-search">
-                <svg viewBox="0 0 20 20" fill="none"><circle cx="9" cy="9" r="6.2" stroke="currentColor" stroke-width="1.6"/><line x1="13.4" y1="13.4" x2="18" y2="18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-                <span>Search</span>
-              </div>
-            </div>
-            <div class="jobads-table-wrap">
-              <table class="jobads-table">
-                <thead>
-                  <tr>
-                    <th>Listing</th><th>Status</th><th>Published</th><th>Spend</th><th>Impressions</th><th>CTR</th><th>Clicks</th><th>AFO</th><th>Applications</th><th>CVR</th>
-                  </tr>
-                </thead>
-                <tbody id="tbodyCc"></tbody>
-              </table>
-            </div>
-            <div class="jobads-pagination">
-              <button class="page-arrow" disabled>‹</button>
-              <button class="page-num is-active">1</button>
-              <button class="page-num">2</button>
-              <button class="page-num">3</button>
-              <button class="page-num">4</button>
-              <button class="page-num">5</button>
-              <button class="page-arrow">›</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Scatter plot — exact scatter-card, duplicated, no legend, full-bleed -->
-      <div class="cc-card cc-cyan cc-fill reveal-scale">
-        <div class="cc-card-label">Scatter plot</div>
-        <div class="cc-stage" style="height:100%;">
-          <div class="card scatter-card" style="width:100%; height:100%; aspect-ratio:auto; border-radius:32px;">
-            <svg class="scatter-svg" id="scatterChartCc" viewBox="0 0 1100 1000"></svg>
-            <div class="scatter-tooltip" id="scatterTooltipCc"></div>
-          </div>
-          <div class="scatter-legend" id="scatterLegendCc" style="display:none;"></div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
 <!-- ============ OUTRO ============ -->
 <section class="outro">
-  <h2 class="outro-headline">One language.<br>Infinite stories.</h2>
-  <p class="outro-sub">This is a visualization system — not seven charts, but one way of seeing.</p>
+  <h2 class="outro-headline">See Data in Action</h2>
+  <p class="outro-sub">Discover how visualization turns complex data into clear, actionable insights.</p>
   <a href="recruit-analysis.html" class="cta-btn">See it applied</a>
 </section>
 
-<footer>
-  <span>A design language for data visualization — 2026</span>
-</footer>
 
 <script>
 /* ============================================================
@@ -1271,7 +1138,6 @@ function initBarChart(sfx){
   new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) build(); }); }, {threshold:0, rootMargin:"0px 0px -25% 0px"}).observe(document.getElementById(sfx ? 'chartCollection' : 'ch-bar'));
 }
 initBarChart('');
-initBarChart('Cc');
 
 /* ============================================================
    CHAPTER 1 — BAR/HORIZONTAL TOGGLE + "Reach funnel" static view
@@ -1488,7 +1354,6 @@ function initAreaChart(sfx){
   new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) build(); }); }, {threshold:0, rootMargin:"0px 0px -25% 0px"}).observe(document.getElementById(sfx ? 'chartCollection' : 'ch-area'));
 }
 initAreaChart('');
-initAreaChart('Cc');
 
 /* ============================================================
    CHAPTER 3 — LINE CHART
@@ -1584,12 +1449,17 @@ initAreaChart('Cc');
   const lines = {};
   const colorById = {};
   LINE_CATEGORIES.forEach(s=>{ colorById[s.id] = s.color; });
+  // Default state: every line shows its own real color at full opacity.
+  // Only when a specific line is hovered do the *other* lines dim — same
+  // treatment as the donut chart's hover state: keep each line's own
+  // color, just fade its opacity, rather than swapping to gray.
   const hoverDot = svgEl('circle', {class:'pv-line-hoverdot', r:6});
 
   LINE_CATEGORIES.forEach(seg=>{
     const pts = seg.monthly.map((v,i)=>({x:x(i), y:y(v)}));
     const d = smoothPath(pts);
     const path = svgEl('path', {class:'pv-line-path', d:d, 'data-seg':seg.id});
+    path.style.stroke = seg.color;
     svg.appendChild(path);
     lines[seg.id] = { path };
 
@@ -1605,7 +1475,9 @@ initAreaChart('Cc');
         path.classList.remove('is-hover');
         path.classList.toggle('is-focus', isFocused);
         path.classList.toggle('is-dim', !!focusId && !isFocused);
-        path.style.stroke = isFocused ? colorById[k] : '';
+        // Every line always keeps its own real color — dimming (is-dim) is
+        // opacity-only, same treatment as the donut chart's hover state.
+        path.style.stroke = colorById[k];
         tag.classList.toggle('is-focus', isFocused);
         tag.classList.toggle('is-dim', !!focusId && !isFocused);
       });
@@ -1614,12 +1486,14 @@ initAreaChart('Cc');
 
     function preview(on){
       path.classList.toggle('is-hover', on);
-      path.style.stroke = (on || focusId===seg.id) ? seg.color : '';
+      path.style.stroke = seg.color;
       tag.classList.toggle('is-focus', on || focusId===seg.id);
       Object.keys(lines).forEach(k=>{
         if(k===seg.id) return;
-        lines[k].path.classList.toggle('is-hover-dim', on);
         lines[k].tag.classList.toggle('is-hover-dim', on);
+        // Other lines: full color by default, own color at subdued opacity
+        // while this one is hovered — never swapped to gray.
+        lines[k].path.classList.toggle('is-hover-dim', on);
       });
       if(on){
         const last = seg.monthly[11];
@@ -1667,8 +1541,9 @@ initAreaChart('Cc');
       Object.keys(lines).forEach(k=>{
         const on = k===activeId;
         lines[k].path.classList.toggle('is-hover', on);
+        // Hovered line keeps its real color at full prominence; every other
+        // line keeps its own color too, just at a subdued opacity.
         lines[k].path.classList.toggle('is-hover-dim', !on);
-        lines[k].path.style.stroke = on ? colorById[k] : '';
         lines[k].tag.classList.toggle('is-focus', on);
         lines[k].tag.classList.toggle('is-hover-dim', !on);
       });
@@ -1683,7 +1558,8 @@ initAreaChart('Cc');
     if(!focusId){
       Object.keys(lines).forEach(k=>{
         lines[k].path.classList.remove('is-hover','is-hover-dim');
-        lines[k].path.style.stroke = '';
+        // Cursor left the chart — smoothly return every line to its own color.
+        lines[k].path.style.stroke = colorById[k];
         lines[k].tag.classList.remove('is-focus','is-hover-dim');
       });
     }
@@ -1790,7 +1666,6 @@ function initDonutChart(sfx){
   new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) build(); }); }, {threshold:0, rootMargin:"0px 0px -25% 0px"}).observe(document.getElementById(sfx ? 'chartCollection' : 'ch-donut'));
 }
 initDonutChart('');
-initDonutChart('Cc');
 
 /* ============================================================
    CHAPTER 5 — KPI
@@ -1811,20 +1686,6 @@ initDonutChart('Cc');
     animateValue(num3, 84, {decimals:0, dur:1800, ease:easeOutCubic});
   }
   new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) build(); }); }, {threshold:0, rootMargin:"0px 0px -25% 0px"}).observe(document.getElementById('ch-kpi'));
-})();
-
-// Chart Collection's KPI card — the exact same "Budget used" card and the
-// exact same count-up call as kpiNum1 above, just triggered by the
-// collection's own entrance instead of the KPI chapter's.
-(function(){
-  const num1Cc = document.getElementById('kpiNum1Cc');
-  if(!num1Cc) return;
-  let built = false;
-  function build(){
-    if(built) return; built = true;
-    animateValue(num1Cc, 1234, {prefix:'€', decimals:0, dur:1800});
-  }
-  new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) build(); }); }, {threshold:0, rootMargin:"0px 0px -25% 0px"}).observe(document.getElementById('chartCollection'));
 })();
 
 /* ============================================================
@@ -1861,7 +1722,6 @@ function initTable(sfx){
   new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting){ build(); } }); }, {threshold:0, rootMargin:"0px 0px -25% 0px"}).observe(document.getElementById(sfx ? 'chartCollection' : 'ch-table'));
 }
 initTable('');
-initTable('Cc');
 
 /* ============================================================
    CHAPTER 7 — SCATTER
@@ -1953,7 +1813,6 @@ function initScatterChart(sfx){
   new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting) build(); }); }, {threshold:0, rootMargin:"0px 0px -25% 0px"}).observe(document.getElementById(sfx ? 'chartCollection' : 'ch-scatter'));
 }
 initScatterChart('');
-initScatterChart('Cc');
 </script>
 </body>
 </html>
